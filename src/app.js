@@ -27,6 +27,15 @@ app.post("/user",(req ,res) =>{
 app.delete("/user",(req,res)=>{
     res.send({message:"user deleted Sucessfully"});
 });
+
+app.get("/user/:userId/:name/:password",(req,res)=>{
+    console.log(req.params);
+    res.send({firstname:"Harsh", lastname:"Anand"});
+});
+
+
+
+
  app.listen(7777,() => {
     console.log("Server is running at port no 7777");
  });
