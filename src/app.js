@@ -17,11 +17,11 @@ app.get("/getUserData",(req ,res) =>{
     //    res.status(500).send("something went wrong");}
 })
 
-app.get("/",)(err, req, res ,next )=>{
+app.get("/",(err, req, res ,next )=>{
     if(err){
         res.status(500).send("something went wrong");
 
-    }};
+    }});
 
  app.listen(7777,() => {
     console.log("Server is running at port no 7777");
