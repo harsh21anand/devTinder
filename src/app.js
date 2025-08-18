@@ -1,31 +1,33 @@
 const express = require("express");
 
 const app = express();
+const {authadmin , authuser}= require("./middleware/auth");
 
+app.use("/admin",authadmin);
 
+app.post("/user/login",(req,res) =>{
+    res.send("user login successfully")
+});
 
-// ******Middlewares & Error Handlers*****
+// All other user routes secure
+app.use("/user", authuser,(req, res) =>{
+    res.send("user authenticated successfully!!!")
+});
 
+app.get("/admin", (req, res) =>{
+    res.send("welcome to admin page  ");
+});
+app.get("/admin/getAll",(req, res) =>{
+res.send("All data send to admin");
+});
 
-app.get(
-    "/user",
-     (req , res , next)=>{
-    console.log('Handling the route user !!!');
-    next();
-},
-(req , res ,next )=>{
-    console.log("Handling the route user 2!!!");
-    next();
-},
-(req , res,next )=>{
-    console.log("Handling the route user 3!!!");
-   next();
-},
-(req , res)=>{
-    console.log("Handling the route user 4!!!");
-    res.send("5 th middlewear");
-}
-);
+app.get("/admin/deleteAll", (req ,res) =>{
+    res.send("All data deleted by admin");
+});
+
+app.get("/user/profile", (req ,res) =>{
+    res.send("welcome to user page ");
+});
 
 
 
