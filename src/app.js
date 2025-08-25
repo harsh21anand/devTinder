@@ -4,23 +4,49 @@ const app = express();
 
 
 const User = require("./models/user");
-
+app.use(express.json()); // middelware
 app.post("/signup", async (req, res) => {
+
   try {
     // creating a new instance of user model
-    const user = new User({
-      firstName : "Harsh",
-      lastName : "Anand",
-      email : "harshanand160802@gmail.com",
-      password : "Harsh@123"
-    });
+    const user = new User(req.body);
     await user.save();
 
     res.send("user added successfully" );
   } catch(error) {
-    res.status(500).send("Error adding user");
+    res.status(400).send("Error saving to  user");
   }
-});
+ });
+
+//  //fetch one user from database by email
+//  app.get("/user",async(req , res) =>{
+//   const Email = req.body.email;
+//   try{
+//     const user = await User.findOne({email :Email});
+//     res.send(user);
+//   } catch (error) {
+//     res.status(500).send("Error fetching user");
+//   }
+  
+//  })
+
+
+ //feed API -- get all the users from the database
+ app.get("/feed", async (req , res) =>{
+  const userEmail = req.body.email ;
+  try{
+    const users = await User.find({}); // due to empty filter it fetches all the users from the collection
+    if(users.length === 0){
+      return res.status(404).send("No users found");
+    }else{
+      return res.send(users);
+    }
+  } catch (error){
+    res.status(500).send("Error fetching users" );
+  }
+
+  
+})
 
 
   connectDB()
