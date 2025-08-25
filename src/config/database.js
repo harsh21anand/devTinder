@@ -15,7 +15,7 @@ const mongoose = require('mongoose');
 const connectDB = async () => {
   
     await mongoose.connect(
-      "mongodb+srv://harshanand160802:GBxWxifqYEUWti9u@harshdb.kulxtul.mongodb.net/devTinder" // end with database name 
+      "mongodb+srv://<username>:<password>@harshdb.kulxtul.mongodb.net/devTinder" // end with database name 
 
       // if  we not write database name it  refers to cluster name 
     );
