@@ -19,16 +19,16 @@ app.post("/signup", async (req, res) => {
  });
 
 //  //fetch one user from database by email
-//  app.get("/user",async(req , res) =>{
-//   const Email = req.body.email;
-//   try{
-//     const user = await User.findOne({email :Email});
-//     res.send(user);
-//   } catch (error) {
-//     res.status(500).send("Error fetching user");
-//   }
+ app.get("/user",async(req , res) =>{
+  const id = req.body.id;
+  try{
+    const user = await User.findById({id});
+    res.send(user);
+  } catch (error) {
+    res.status(500).send("Error fetching user");
+  }
   
-//  })
+ });
 
 
  //feed API -- get all the users from the database
