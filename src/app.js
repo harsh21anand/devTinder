@@ -1,117 +1,99 @@
 const express = require("express");
+const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
 const connectDB=require("./config/database");
-const app = express();
+const {userAuth} = require("./middleware/auth");
 
+//const { body, validationResult } = require("express-validator");
+
+const { validateSignUpData , validateLoginData } = require("./utils/validation");
+
+const app = express();
+const bcrypt  = require("bcrypt");
 
 const User = require("./models/user");
 app.use(express.json()); // middelware
-app.post("/signup", async (req, res) => {
+app.use(cookieParser());
 
-  try {
-    // creating a new instance of user model
-    const user = new User(req.body);
+connectDB();
+
+// ***********Signup route with validation ***********************
+app.post("/signup",async (req, res) => {
+
+try {
+    // validation of data
+    validateSignUpData(req);
+    // Encrypt the password
+  const {firstName , lastName , email ,password} = req.body;
+    const passwordHash =  await bcrypt.hash(password , 10);
+   
+
+      // Creating a new instance of the user model
+    const user = new User({
+      firstName,
+      lastName , 
+      email,
+      password: passwordHash,
+      age: req.body.age,
+      gender: req.body.gender
+    });
     await user.save();
-
-    res.send("user added successfully" );
-  } catch(error) {
-    res.status(400).send("Error saving to  user");
-  }
- });
-
-//  //fetch one user from database by email
- app.get("/user",async(req , res) =>{
- const emailId  = req.body.email;
-  try{
-    const user= await User.findOne({email:emailId});
-       if (!user) return res.status(404).send("User not found");
-    res.send(user);
+    res.status(201).send({ message: "User created successfully" });
   } catch (error) {
-    res.status(500).send("Error fetching user");
+    res.status(400).send("ERROR :" +error.message );
   }
-  
- });
-
-
- //feed API -- get all the users from the database
- app.get("/feed", async (req , res) =>{
-  const userEmail = req.body.email ;
-  const data = req.body;
-  try{
-    const users = await User.find({}); // due to empty filter it fetches all the users from the collection
-    if(users.length === 0){
-      return res.status(404).send("No users found");
-    }else{
-      return res.send(users);
-    }
-  } catch (error){
-    res.status(500).send("Error fetching users" );
-  }
-
-  
 });
 
-app.delete("/user", async(req, res) =>{
-  const userId = req.body.id;
+app.post("/login", async( req , res) =>{
+ 
   try{
-   // const deleteUser = await User.findOneAndDelete({_id:userId});
-   // or we write like this 
-    const deleteUser = await User.findOneAndDelete(userId);
-    if(!deleteUser){
-      return res.status(404).send("User not found");
-    }else{
-      return res.send("User deleted successfully");
+    validateLoginData(req);
+    const {email , password} = req.body;
+    const user = await User.findOne({email:email});
+    if(!user) {
+      return res.status(404).send("Invalid Credentials");
     }
-  }catch (error){
-    res.status(500).send("Error deleting user");
+    // check if user is present in database
+  const isPasswordValid = await bcrypt.compare(password ,user.password);
+
+  if(isPasswordValid){
+  // create a JWT Token 
+  const token = await jwt.sign({_id:user._id} , "DEV@Tinder$790",{expiresIn :"7d"});  // secret key
+  console.log(token);
+
+  // Add the token to cookie and send the response back to the user 
+   res.cookie("token" , token , { expires:new Date(Date.now() + 7*24*60*60*1000) });
+    res.send("login successfully");
+  }else{
+    throw new Error("Invalid Credentials");
   }
 
+  }catch (error) {
+    res.status(400).send("ERROR :" + error.message );
+  }
+})
+
+
+app.get("/profile",userAuth , async (req , res) =>{
+  try{
+    const user = req.user;
+
+   res.send(user);
+
+  }catch(error){
+    res.status(400).send("ERROR :" + error.message);
+  }
 });
 
 
-// app.patch("/user", async (req , res) =>{
-//   const userId = req.body.userId ;
-//    const data = req.body;
-// try{
-//   await User.findByIdAndUpdate({_id:userId },data);
-//   res.send("User Updated Successfully");
-// }catch (error){
-//   res.status(500).send("Error updating user" );
-// }
-  
-// });
+app.post("/sendConnectionRequest",userAuth, async(req , res) =>{
 
+  const user = req.user;
+  // send connection request 
+  console.log("Send Connection Request");
 
-app.patch("/user/:id", async(req ,res) =>{
-  const id = req.params.id;
-  // console.log(id);
-  
-  try{
-     const ALLOWED_UPDATES =["email","skills","age","about","photoUrl","phoneNumber"];  // only these fields can be changed after creating user 
-  const isUpdateAllowed = Object.keys(req.body).every((k) => ALLOWED_UPDATES.includes(k)); // it can convert object to array of keys
-  if(!isUpdateAllowed){
-   throw new Error(" Update not allowed ");
-  }
-    const user =await User.findOneAndUpdate(
-      
-      {_id:id},
-      {$set:req.body},
-    {new:true ,  runValidators:true}
-    );
-    
-
-    if(!user){
-      return res.status(404).send("user not found");
-    
-    }
-    if(user?.skills.length >10){
-      throw new Error("Skills cannot greater than 10"); // it help to make custom validation for skills and safe guard
-    }
-    res.status(200).send("User updated successfully");
-    }catch(error){
-      res.status(500).send("Error not updated users successfully" + error.message);
-    }
-  });
-  
+  res.send(user.firstName + " send the connection request");
+})
   connectDB()
     .then(()=>{
       console.log("Database connection established...");

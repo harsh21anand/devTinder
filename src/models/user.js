@@ -34,14 +34,14 @@ const userSchema = new mongoose.Schema({
 },
   age:{
     type : Number ,
-    required:true,
+   
     trim:true,
     min:18,
     max:65
   },
   gender:{
     type: String,
-     required:true,
+    
      trim: true,
      validate(value){
       if(!["male","female" ,"others"].includes(value)){
