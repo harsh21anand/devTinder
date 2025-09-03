@@ -81,23 +81,34 @@ app.delete("/user", async(req, res) =>{
 // });
 
 
-app.patch("/user", async(req ,res) =>{
-  const emailId = req.body.email;
-  console.log(emailId);
+app.patch("/user/:id", async(req ,res) =>{
+  const id = req.params.id;
+  // console.log(id);
+  
   try{
+     const ALLOWED_UPDATES =["email","skills","age","about","photoUrl","phoneNumber"];  // only these fields can be changed after creating user 
+  const isUpdateAllowed = Object.keys(req.body).every((k) => ALLOWED_UPDATES.includes(k)); // it can convert object to array of keys
+  if(!isUpdateAllowed){
+   throw new Error(" Update not allowed ");
+  }
     const user =await User.findOneAndUpdate(
       
-      {email:emailId},
-      {$set:{ "skills": ["C", "C++", "Java"]}},
+      {_id:id},
+      {$set:req.body},
     {new:true ,  runValidators:true}
     );
+    
+
     if(!user){
       return res.status(404).send("user not found");
     
     }
+    if(user?.skills.length >10){
+      throw new Error("Skills cannot greater than 10"); // it help to make custom validation for skills and safe guard
+    }
     res.status(200).send("User updated successfully");
     }catch(error){
-      res.status(500).send("Error not updated users successfully" ,error.message);
+      res.status(500).send("Error not updated users successfully" + error.message);
     }
   });
   

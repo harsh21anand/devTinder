@@ -1,5 +1,7 @@
 const { ServerMonitoringMode } = require('mongodb');
+const  validator = require('validator');
 const mongoose = require('mongoose');
+
 const userSchema = new mongoose.Schema({
   firstName:{
     type:String, 
@@ -16,7 +18,14 @@ const userSchema = new mongoose.Schema({
     unique:true, // this can not allow duplicate email
     lowercase:true, // this can convert the email to lowercase
     trim: true ,// this can remove before and after email
-    match: [/\S+@\S+\.\S+/, 'Email format is invalid']
+    match: [/\S+@\S+\.\S+/, 'Email format is invalid'],
+    // other way to fix validation issue its for all type of validation 
+    
+    //validate(value){
+    //   if(!validator.isEmail(value)){
+    //     throw new Error("Invalid email address"+value);
+    //   }
+    // }
 
   },
   password:{
