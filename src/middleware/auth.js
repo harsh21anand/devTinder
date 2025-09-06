@@ -29,7 +29,4 @@ try{
  }
 }
 
-module.exports ={
-  
-  userAuth
-}
+module.exports =userAuth;

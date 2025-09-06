@@ -1,7 +1,8 @@
 const { ServerMonitoringMode } = require('mongodb');
 const  validator = require('validator');
 const mongoose = require('mongoose');
-
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const userSchema = new mongoose.Schema({
   firstName:{
     type:String, 
@@ -74,6 +75,29 @@ const userSchema = new mongoose.Schema({
   timestamps:true  // it can create two extra fields createdAt and updatedAt
 });
 
+
+
+// agr is function mai arrow use krege to ye work nhi kr skte h q ki ye oops par hai
+
+// its known as schema method
+
+//check if user is present in database
+userSchema.methods.getJWT = async function() {
+  const user = this;
+   const token = await jwt.sign({
+    _id : user._id
+  } , "DEV@Tinder$790" , {expiresIn:"7d"});
+  return token ;
+}
+
+
+userSchema.methods.validatePassword = async function(passwordInputByUser) {
+  const user = this ;
+  const passwordHash = user.password;
+
+  const isPasswordValid = await bcrypt.compare(passwordInputByUser , passwordHash);
+  return isPasswordValid ;
+}
 
 //##### whenever we reference a model it starts with a capital letter####
 
