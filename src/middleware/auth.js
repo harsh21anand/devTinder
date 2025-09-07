@@ -21,7 +21,7 @@ try{
  if(!user){
   throw new Error("User is not found");
  }
- req.user = user;
+ req.user = user;  //logged in user 
  next();
 }
  catch(err){

@@ -5,6 +5,8 @@ const connectDB=require("./config/database");
 
 const app = express();
 
+
+
 app.use(express.json()); // middelware
 app.use(cookieParser());
 
